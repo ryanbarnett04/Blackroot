@@ -10,9 +10,9 @@ class OrcWarrior(Character):
     def __init__(self, Side: CharacterSide, Events: EventPipeline):
 
         super().__init__(Name = "Orc Warrior", Leader = False, Role = CharacterRole.Attacker,
-                       Tags = ["Orc"], HiddenTags = ["SELFTAG_ORCWARRIOR"], Side = Side, BaseMaxHealth = 108378, BaseMaxShield = 60274,
-                       BaseOffence = 6174, BaseDefence = 3185, BaseCriticalChance = 67, BaseCriticalDamage = 150,
-                       BaseEvasion = 0, BaseHealthSteal = 10, BaseSpeed = 156)
+                       Tags = ["Orc"], HiddenTags = ["SELFTAG_ORCWARRIOR"], Side = Side, BaseMaxHealth = 59746, BaseMaxShield = 45160,
+                       BaseOffence = 7143, BaseDefence = 3677, BaseCriticalChance = 101, BaseCriticalDamage = 172,
+                       BaseEvasion = 2, BaseHealthSteal = 15, BaseSpeed = 163)
 
         self.Events = Events
 
