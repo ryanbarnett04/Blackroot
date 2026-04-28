@@ -1,22 +1,23 @@
-from Events.basic_ability_used import BasicAbilityUsed
+from Events.damage_instance_mulitple import DamageInstanceMultiple
+from Events.new_turn import NewTurn
 from character import Character, CharacterRole, CharacterSide
 from ability import Ability, AbilityType
 from StatusEffects.offence_up import OffenceUp
-import random
-
-from event import Event, EventType
+from event import Event
 from event_pipeline import EventPipeline
 from Events.damage_instance_single import DamageInstanceSingle
 from Events.basic_ability_used import BasicAbilityUsed
 from Events.special_ability_used import SpecialAbilityUsed
+from utilities import SingleTargetDamage
+
 class OrcChieftain(Character):
 
     def __init__(self, Side: CharacterSide, Events: EventPipeline):
 
         super().__init__(Name = "Orc Chieftain", Leader = True, Role = CharacterRole.Support,
                        Tags = ["Orc"], HiddenTags = ["SELFTAG_ORCCHIEFTAIN"], Side = Side, BaseMaxHealth = 66880, BaseMaxShield = 48153,
-                       BaseOffence = 5889, BaseDefence = 5127, BaseCriticalChance = 54, BaseCriticalDamage = 150,
-                       BaseEvasion = 10, BaseHealthSteal = 15, BaseSpeed = 160)
+                       BaseOffence = 5889, BaseDefence = 4972, BaseCriticalChance = 54, BaseCriticalDamage = 150,
+                       BaseEvasion = 2, BaseHealthSteal = 20, BaseSpeed = 200)
 
         self.Events = Events
 
@@ -26,15 +27,17 @@ class OrcChieftain(Character):
         ]
 
         self.PassiveAbilities = [
-            OrcChieftain.WarChief(self)
+            OrcChieftain.WarChief(self),
+            OrcChieftain.Commander(self)
         ]
 
         self.Events.RegisteredAbilities.append(self.ActiveAbilities[0])
         self.Events.RegisteredAbilities.append(self.ActiveAbilities[1])
         self.Events.RegisteredAbilities.append(self.PassiveAbilities[0])
+        self.Events.RegisteredAbilities.append(self.PassiveAbilities[1])
 
     # BASIC ABILITY - BANNER STRIKE:
-    # Deal 250% Damage to target enemy
+    # Deal 250% Damage to target enemy and grant a random ally Speed Up for 1 turn
     class BannerStrike(Ability):
 
         def __init__(self, User: Character):
@@ -44,52 +47,9 @@ class OrcChieftain(Character):
 
         def Activate(self, Allies: list[Character], Enemies: list[Character], TargetAllyIndex: int, TargetEnemyIndex: int):
 
-            Target = Enemies[TargetEnemyIndex]
-
-            if not Target.CanReceiveDamage:
-                return
-
-            if Target.GuaranteedEvade or random.randint(1, 100) <= Target.GetCurrentEvasion():
-                print("Evaded!")
-                return
-
-            AttackDamage = (self.User.GetCurrentOffence() * 2.5) - Target.GetCurrentDefence()
-            IsCrit = False
-
-            if AttackDamage < 0:
-                AttackDamage = 0
-
-            if Target.CanBeCriticallyHit:
-                if self.User.GuaranteedCrit or random.randint(1, 100) <= self.User.GetCurrentCriticalChance():
-                    AttackDamage = AttackDamage * (self.User.GetCurrentCriticalDamage() / 100)
-                    IsCrit = True
-
-            Variance = random.uniform(-0.10, 0.10)
-            AttackDamage = AttackDamage * (1 + Variance)
-
-            AttackDamage = int(AttackDamage)
-
-            if Target.GetCurrentShield() > 0:
-
-                if Target.GetCurrentShield() < AttackDamage:
-                    ShieldDamage = Target.GetCurrentShield()
-                    HealthDamage = AttackDamage - ShieldDamage
-                    Target.ModifyCurrentShield(-ShieldDamage)
-                    Target.ModifyCurrentHealth(-HealthDamage)
-                else:
-                    Target.ModifyCurrentShield(-AttackDamage)
-            else:
-                Target.ModifyCurrentHealth(-AttackDamage)
-
-            print(self.Name)
-            print("Damage:", AttackDamage)
-
-            if self.User.CanRecoverHealth:
-                self.User.ModifyCurrentHealth(int(AttackDamage * (self.User.GetCurrentHealthSteal() / 100)))
-
             self.User.Events.DistributeEvent(BasicAbilityUsed(self.User))
-            self.User.Events.DistributeEvent(DamageInstanceSingle(self.User, Target, AttackDamage, IsCrit))
-
+            Target = Enemies[TargetEnemyIndex]
+            SingleTargetDamage(self, Target, 2.5, [-0.10, 0.10])
             return
 
         def Listener(self, event: Event):
@@ -109,7 +69,7 @@ class OrcChieftain(Character):
             for Ally in Allies:
 
                 if Ally.CanGainBuffs:
-                    Ally.StatusEffects.append(OffenceUp(self.User, 2))
+                    Ally.StatusEffects.append(OffenceUp(Ally, 2))
 
                 if Ally.CanGainBonusTM:
                     Ally.ModifyTurnMeter(0.2)
@@ -150,3 +110,57 @@ class OrcChieftain(Character):
                     if "Orc" in event.GeneratedBy.Tags:
                         if event.WasCrit:
                             event.GeneratedBy.ModifyTurnMeter(0.05)
+
+            if isinstance(event, DamageInstanceMultiple):
+                if event.GeneratedBy.Side == self.User.Side:
+                    if "Orc" in event.GeneratedBy.Tags:
+                        crits = event.WasCrit.count(True)
+                        if crits > 0:
+                            event.GeneratedBy.ModifyTurnMeter(0.05 * crits)
+
+    # UNIQUE ABILITY - Commander
+    # Orc Chieftain gains 20% Max Shield. Whenever an Orc ally is Critically Hit, they recover 10% Health and Orc Chieftain gains 10% Turn Meter (limit once per turn)
+    class Commander(Ability):
+
+        def __init__(self, User: Character):
+            super().__init__(User = User, Name = "Commander", Type = AbilityType.Unique,
+                             Cooldown = None, TurnsToNextUse = None)
+
+            self.CanGainTM = True
+
+        def Activate(self, Allies: list["Character"], Enemies: list["Character"], TargetEnemyIndex: int, TargetAllyIndex: int):
+
+            if self.User.CanGainMaxShield:
+                self.User.SetPercentileMaxShieldModifier(0.2)
+
+        def Listener(self, event: "Event"):
+
+            if isinstance(event, DamageInstanceSingle):
+                if event.GeneratedBy.Side == self.User.Side:
+                    return
+                if "Orc" not in event.Receiver.Tags:
+                    return
+                if not event.WasCrit:
+                    return
+                if event.Receiver.CanRecoverHealth:
+                    event.Receiver.ModifyCurrentHealth(event.Receiver.GetCurrentMaxHealth() * (10 / 100))
+                if self.User.CanGainBonusTM and self.CanGainTM:
+                    self.User.ModifyTurnMeter(0.10)
+                    self.CanGainTM = False
+
+            if isinstance(event, DamageInstanceMultiple):
+                if event.GeneratedBy.Side == self.User.Side:
+                    return
+                for i, C in enumerate(event.Receivers):
+                    if "Orc" not in C.Tags:
+                        continue
+                    if not event.WasCrit[i]:
+                        continue
+                    if C.CanRecoverHealth:
+                        C.ModifyCurrentHealth(C.GetCurrentMaxHealth() * (10 / 100))
+                    if self.User.CanGainBonusTM and self.CanGainTM:
+                        self.User.ModifyTurnMeter(0.10)
+                        self.CanGainTM = False
+
+            if isinstance(event, NewTurn):
+                self.CanGainTM = True
