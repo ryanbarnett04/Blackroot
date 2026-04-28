@@ -11,9 +11,9 @@ class OrcBrute(Character):
     def __init__(self, Side: CharacterSide, Events: EventPipeline):
 
         super().__init__(Name = "Orc Brute", Leader = False, Role = CharacterRole.Tank,
-                       Tags = ["Orc"], HiddenTags = ["SELFTAG_ORCBRUTE"], Side = Side, BaseMaxHealth = 133275, BaseMaxShield = 105827,
-                       BaseOffence = 4373, BaseDefence = 6295, BaseCriticalChance = 55, BaseCriticalDamage = 150,
-                       BaseEvasion = 0, BaseHealthSteal = 20, BaseSpeed = 142)
+                       Tags = ["Orc"], HiddenTags = ["SELFTAG_ORCBRUTE"], Side = Side, BaseMaxHealth = 89593, BaseMaxShield = 91000,
+                       BaseOffence = 4755, BaseDefence = 6075, BaseCriticalChance = 73, BaseCriticalDamage = 150,
+                       BaseEvasion = 2, BaseHealthSteal = 32, BaseSpeed = 115)
 
         self.Events = Events
 
