@@ -35,6 +35,9 @@ while True:
     print("Character: ", CharacterInTurn.Name)
     print("Side: ", CharacterInTurn.Side.name + "\n")
 
+    for c in Allies:
+        print(f"{c.Name} current offence is {c.GetCurrentOffence()}")
+
     if CharacterInTurn.Side == CharacterSide.EnemySide:
         print("Skipping Enemy Turn\n")
         continue
