@@ -33,10 +33,6 @@ class Character:
     FlatMaxHealthModifier: int
     CurrentHealth: int
 
-    CanRecoverHealth: bool = True
-    CanGainMaxHealth: bool = True
-    CanLoseMaxHealth: bool = True
-
     # Shield Stats & Attributes
     BaseMaxShield: int
     CurrentMaxShield: int
@@ -44,18 +40,11 @@ class Character:
     FlatMaxShieldModifier: int
     CurrentShield: int
 
-    CanRecoverShield: bool = True
-    CanGainMaxShield: bool = True
-    CanLoseMaxShield: bool = True
-
     # Offence Stats & Attributes
     BaseOffence: int
     CurrentOffence: int
     PercentileOffenceModifier: float
     FlatOffenceModifier: int
-
-    CanGainOffence: bool = True
-    CanLoseOffence: bool = True
 
     # Defence Stats & Attributes
     BaseDefence: int
@@ -63,40 +52,25 @@ class Character:
     PercentileDefenceModifier: float
     FlatDefenceModifier: int
 
-    CanGainDefence: bool = True
-    CanLoseDefence: bool = True
-
     # Critical Chance Stats & Attributes
     BaseCriticalChance: int
     CurrentCriticalChance: int
     PercentileCriticalChanceModifier: float
-
-    CanGainCriticalChance: bool = True
-    CanLoseCriticalChance: bool = True
 
     # Critical Damage Stats & Attributes
     BaseCriticalDamage: int
     CurrentCriticalDamage: int
     PercentileCriticalDamageModifier: float
 
-    CanGainCriticalDamage: bool = True
-    CanLoseCriticalDamage: bool = True
-
     # Evasion Stats & Attributes
     BaseEvasion: int
     CurrentEvasion: int
     PercentileEvasionModifier: float
 
-    CanGainEvasion: bool = True
-    CanLoseEvasion: bool = True
-
     # Health Steal Stats & Attributes
     BaseHealthSteal: int
     CurrentHealthSteal: int
     PercentileHealthStealModifier: float
-
-    CanGainHealthSteal: bool = True
-    CanLoseHealthSteal: bool = True
 
     # Speed Stats & Attributes
     BaseSpeed: int
@@ -104,22 +78,6 @@ class Character:
     PercentileSpeedModifier: float
     FlatSpeedModifier: int
     TurnMeter: float                    # 0.0 -> 1.0
-
-    CanGainSpeed: bool = True
-    CanLoseSpeed: bool = True
-
-    # Other Attributes
-    IsAlive: bool = True
-    CanReceiveDamage: bool = True
-    CanBeCriticallyHit: bool = True
-    CanGainBonusTM: bool = True
-    CanLoseBonusTM: bool = True
-    CanGainBuffs: bool = True
-    CanGainDebuffs: bool = True
-    GuaranteedEvade: bool = False
-    GuaranteedCrit: bool = False
-    Stunned: bool = False
-    CanAssist: bool = True
 
     Events: EventPipeline
     ActiveAbilities: list["Ability"]
