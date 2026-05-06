@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
                        AbilityDamage: float, VarianceRange: list[float]):
 
-    if not Target.CanReceiveDamage:
+    if "DAMAGE_IMMUNE" in Target.EffectTags:
         return
 
-    if Target.GuaranteedEvade or random.randint(1, 100) <= Target.GetCurrentEvasion():
+    if "GUARANTEED_EVADE" in Target.EffectTags or random.randint(1, 100) <= Target.GetCurrentEvasion():
         print("Evaded!")
         return
 
@@ -24,8 +24,8 @@ def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
     if AttackDamage < 0:
         AttackDamage = 0
 
-    if Target.CanBeCriticallyHit:
-        if ActiveAbility.User.GuaranteedCrit or random.randint(1, 100) <= ActiveAbility.User.GetCurrentCriticalChance():
+    if "CRIT_IMMUNE" not in Target.EffectTags:
+        if "GUARANTEED_CRIT" in ActiveAbility.User.EffectTags or random.randint(1, 100) <= ActiveAbility.User.GetCurrentCriticalChance():
             AttackDamage = AttackDamage * (ActiveAbility.User.GetCurrentCriticalDamage() / 100)
             IsCrit = True
 
@@ -45,7 +45,7 @@ def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
     else:
         Target.ModifyCurrentHealth(-AttackDamage)
 
-    if ActiveAbility.User.CanRecoverHealth:
+    if "CANNOT_RECOVER_HEALTH" not in ActiveAbility.User.EffectTags:
         ActiveAbility.User.ModifyCurrentHealth(int(AttackDamage * (ActiveAbility.User.GetCurrentHealthSteal() / 100)))
 
     ActiveAbility.User.Events.DistributeEvent(DamageInstanceSingle(ActiveAbility.User, Target, AttackDamage, IsCrit))
@@ -61,10 +61,10 @@ def MultiTargetDamage(ActiveAbility: Ability, Targets: list["Character"],
 
     for C in Targets:
 
-        if not C.CanReceiveDamage:
+        if "DAMAGE_IMMUNE" in C.EffectTags:
             continue
 
-        if C.GuaranteedEvade or random.randint(1, 100) <= C.GetCurrentEvasion():
+        if "GUARANTEED_EVADE" in C.EffectTags or random.randint(1, 100) <= C.GetCurrentEvasion():
             print("Evaded!")
             continue
 
@@ -74,8 +74,8 @@ def MultiTargetDamage(ActiveAbility: Ability, Targets: list["Character"],
         if AttackDamage < 0:
             AttackDamage = 0
 
-        if C.CanBeCriticallyHit:
-            if ActiveAbility.User.GuaranteedCrit or random.randint(1, 100) <= ActiveAbility.User.GetCurrentCriticalChance():
+        if "CRIT_IMMUNE" not in C.EffectTags:
+            if "GUARANTEED_CRIT" in ActiveAbility.User.EffectTags or random.randint(1, 100) <= ActiveAbility.User.GetCurrentCriticalChance():
                 AttackDamage = AttackDamage * (ActiveAbility.User.GetCurrentCriticalDamage() / 100)
                 IsCrit = True
 
@@ -95,9 +95,8 @@ def MultiTargetDamage(ActiveAbility: Ability, Targets: list["Character"],
         else:
             C.ModifyCurrentHealth(-AttackDamage)
 
-        if ActiveAbility.User.CanRecoverHealth:
-            ActiveAbility.User.ModifyCurrentHealth(
-                int(AttackDamage * (ActiveAbility.User.GetCurrentHealthSteal() / 100)))
+        if "CANNOT_RECOVER_HEALTH" not in ActiveAbility.User.EffectTags:
+            ActiveAbility.User.ModifyCurrentHealth(int(AttackDamage * (ActiveAbility.User.GetCurrentHealthSteal() / 100)))
 
         Receivers.append(C)
         DamageDealt.append(AttackDamage)
