@@ -9,13 +9,13 @@ class DamageInstanceMultiple(Event):
     Attacker: "Character"
     Receivers: list["Character"]
     DamageDealt: list[int]
-    WasCrit: list[bool]
+    WasCrits: list[bool]
 
     def __init__(self, GeneratedBy: "Character", Receivers: list["Character"],
-                 DamageDealt: list[int], WasCrit: list[bool]):
+                 DamageDealt: list[int], WasCrits: list[bool]):
         super().__init__(EventType.DamageInstanceMultiple, GeneratedBy)
 
         self.Attacker = self.GeneratedBy
         self.Receivers = Receivers
         self.DamageDealt = DamageDealt
-        self.WasCrit = WasCrit
+        self.WasCrits = WasCrits
