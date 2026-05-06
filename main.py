@@ -6,6 +6,7 @@ from Characters.orc_warrior import OrcWarrior
 from Characters.orc_brute import OrcBrute
 from event_pipeline import EventPipeline
 from turn_manager import TurnManager
+from Events.new_turn import NewTurn
 
 pygame.init()
 screen = pygame.display.set_mode((100,100))
@@ -34,9 +35,10 @@ while True:
     print("Turn: ", TurnManager.GetCurrentTurn())
     print("Character: ", CharacterInTurn.Name)
     print("Side: ", CharacterInTurn.Side.name + "\n")
+    EventPipeline.DistributeEvent(NewTurn(CharacterInTurn))
 
-    for c in Allies:
-        print(f"{c.Name} current offence is {c.GetCurrentOffence()}")
+    for C in Allies:
+        print(f"{C.Name} current offence is {C.GetCurrentOffence()}")
 
     if CharacterInTurn.Side == CharacterSide.EnemySide:
         print("Skipping Enemy Turn\n")
@@ -58,7 +60,7 @@ while True:
 
             if event.key == pygame.constants.K_1:
 
-                if Enemies[0].IsAlive:
+                if not "UNIT_DEAD" in Enemies[0].EffectTags:
                     TargetEnemy = 0
                     print("Currently Targeting: ", Enemies[TargetEnemy].Name)
                     print("Enemy Shield:", Enemies[TargetEnemy].GetCurrentShield())
@@ -66,7 +68,7 @@ while True:
 
             if event.key == pygame.constants.K_2:
 
-                if Enemies[1].IsAlive:
+                if not "UNIT_DEAD" in Enemies[1].EffectTags:
                     TargetEnemy = 1
                     print("Currently Targeting: ", Enemies[TargetEnemy].Name)
                     print("Enemy Shield:", Enemies[TargetEnemy].GetCurrentShield())
@@ -74,7 +76,7 @@ while True:
 
             if event.key == pygame.constants.K_3:
 
-                if Enemies[2].IsAlive:
+                if not "UNIT_DEAD" in Enemies[2].EffectTags:
                     TargetEnemy = 2
                     print("Currently Targeting: ", Enemies[TargetEnemy].Name)
                     print("Enemy Shield:", Enemies[TargetEnemy].GetCurrentShield())
