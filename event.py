@@ -18,6 +18,7 @@ class EventType(Enum):
     DebuffDispelled = 10
     BasicAbilityUsed = 11
     SpecialAbilityUsed = 12
+    NewTurn = 13
 
 class Event(ABC):
 
