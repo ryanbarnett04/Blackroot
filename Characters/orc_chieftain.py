@@ -1,5 +1,7 @@
+import random
 from Events.damage_instance_mulitple import DamageInstanceMultiple
 from Events.new_turn import NewTurn
+from StatusEffects.speed_up import SpeedUp
 from character import Character, CharacterRole, CharacterSide
 from ability import Ability, AbilityType
 from StatusEffects.offence_up import OffenceUp
@@ -50,6 +52,10 @@ class OrcChieftain(Character):
             self.User.Events.DistributeEvent(BasicAbilityUsed(self.User))
             Target = Enemies[TargetEnemyIndex]
             SingleTargetDamage(self, Target, 2.5, [-0.10, 0.10])
+            Ally = Allies[random.randint(0,4)]
+            if "BUFF_IMMUNE" not in Ally.EffectTags:
+                Ally.StatusEffects.append(SpeedUp(Ally, 1, True, False, True, True))
+
             return
 
         def Listener(self, event: Event):
@@ -66,17 +72,17 @@ class OrcChieftain(Character):
 
         def Activate(self, Allies: list[Character], Enemies: list[Character], TargetAllyIndex: int, TargetEnemyIndex: int):
 
+            self.User.Events.DistributeEvent(SpecialAbilityUsed(self.User))
+
             for Ally in Allies:
 
-                if Ally.CanGainBuffs:
-                    Ally.StatusEffects.append(OffenceUp(Ally, 2))
+                if "BUFF_IMMUNE" not in Ally.EffectTags:
+                    Ally.StatusEffects.append(OffenceUp(Ally, 2, True, False, True, True))
 
-                if Ally.CanGainBonusTM:
+                if "BONUS_TM_IMMUNE" not in Ally.EffectTags:
                     Ally.ModifyTurnMeter(0.2)
 
             self.TurnsToNextUse = self.Cooldown
-
-            self.User.Events.DistributeEvent(SpecialAbilityUsed(self.User))
 
             return
 
@@ -95,15 +101,22 @@ class OrcChieftain(Character):
 
             for Ally in Allies:
 
-                if Ally.CanGainMaxHealth:
+                if "CANNOT_GAIN_MAX_HEALTH" not in Ally.EffectTags:
                     Ally.SetPercentileMaxHealthModifier(0.3)
 
-                if Ally.CanGainOffence:
+                if "CANNOT_GAIN_OFFENCE" not in Ally.EffectTags:
                     Ally.SetPercentileOffenceModifier(0.2)
 
         def Listener(self, event: Event):
 
             print("Ability: ", self.Name, " from ", self.User.Name, " from ", self.User.Side, " is reacting to event")
+
+            if isinstance(event, DamageInstanceMultiple):
+                if event.GeneratedBy.Side == self.User.Side:
+                    if "Orc" in event.GeneratedBy.Tags:
+                        crits = event.WasCrits.count(True)
+                        if crits > 0:
+                            event.GeneratedBy.ModifyTurnMeter(0.05 * crits)
 
             if isinstance(event, DamageInstanceSingle):
                 if event.GeneratedBy.Side == self.User.Side:
@@ -111,15 +124,9 @@ class OrcChieftain(Character):
                         if event.WasCrit:
                             event.GeneratedBy.ModifyTurnMeter(0.05)
 
-            if isinstance(event, DamageInstanceMultiple):
-                if event.GeneratedBy.Side == self.User.Side:
-                    if "Orc" in event.GeneratedBy.Tags:
-                        crits = event.WasCrit.count(True)
-                        if crits > 0:
-                            event.GeneratedBy.ModifyTurnMeter(0.05 * crits)
-
     # UNIQUE ABILITY - Commander
-    # Orc Chieftain gains 20% Max Shield. Whenever an Orc ally is Critically Hit, they recover 10% Health and Orc Chieftain gains 10% Turn Meter (limit once per turn)
+    # Orc Chieftain gains 20% Max Shield. Whenever an Orc ally is Critically Hit, they recover 10% Health and Orc Chieftain
+    # gains 10% Turn Meter (limit once per turn)
     class Commander(Ability):
 
         def __init__(self, User: Character):
@@ -130,7 +137,7 @@ class OrcChieftain(Character):
 
         def Activate(self, Allies: list["Character"], Enemies: list["Character"], TargetEnemyIndex: int, TargetAllyIndex: int):
 
-            if self.User.CanGainMaxShield:
+            if "CANNOT_GAIN_MAX_SHIELD" not in self.User.EffectTags:
                 self.User.SetPercentileMaxShieldModifier(0.2)
 
         def Listener(self, event: "Event"):
@@ -142,9 +149,9 @@ class OrcChieftain(Character):
                     return
                 if not event.WasCrit:
                     return
-                if event.Receiver.CanRecoverHealth:
+                if "CANNOT_RECOVER_HEALTH" not in event.Receiver.EffectTags:
                     event.Receiver.ModifyCurrentHealth(event.Receiver.GetCurrentMaxHealth() * (10 / 100))
-                if self.User.CanGainBonusTM and self.CanGainTM:
+                if "BONUS_TM_IMMUNE" not in self.User.EffectTags and self.CanGainTM:
                     self.User.ModifyTurnMeter(0.10)
                     self.CanGainTM = False
 
@@ -154,11 +161,11 @@ class OrcChieftain(Character):
                 for i, C in enumerate(event.Receivers):
                     if "Orc" not in C.Tags:
                         continue
-                    if not event.WasCrit[i]:
+                    if not event.WasCrits[i]:
                         continue
-                    if C.CanRecoverHealth:
+                    if "CANNOT_RECOVER_HEALTH" not in C.EffectTags:
                         C.ModifyCurrentHealth(C.GetCurrentMaxHealth() * (10 / 100))
-                    if self.User.CanGainBonusTM and self.CanGainTM:
+                    if "BONUS_TM_IMMUNE" not in self.User.EffectTags and self.CanGainTM:
                         self.User.ModifyTurnMeter(0.10)
                         self.CanGainTM = False
 
