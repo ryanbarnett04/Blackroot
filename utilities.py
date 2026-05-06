@@ -52,7 +52,7 @@ def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
 
     print(f"{ActiveAbility.Name} - Damage: {AttackDamage}")
 
-def MultiTargetDamage(ActiveAbility: Ability, Targets: list["Character"],
+def MultiTargetDamage(ActiveAbility: "Ability", Targets: list["Character"],
                       AbilityDamage: float, VarianceRange: list[float]):
 
     Receivers: list["Character"] = []
