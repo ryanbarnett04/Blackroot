@@ -1,4 +1,3 @@
-from event import Event
 from Events.basic_ability_used import BasicAbilityUsed
 from Events.damage_instance_single import DamageInstanceSingle
 from character import *
