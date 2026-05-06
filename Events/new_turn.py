@@ -6,5 +6,5 @@ if TYPE_CHECKING:
 
 class NewTurn(Event):
 
-    def __init__(self, Type: EventType, GeneratedBy: "Character"):
-        super().__init__(Type, GeneratedBy)
+    def __init__(self, GeneratedBy: "Character"):
+        super().__init__(EventType.NewTurn, GeneratedBy)
