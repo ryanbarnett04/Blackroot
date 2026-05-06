@@ -1,5 +1,7 @@
 import sys
 import pygame
+
+from Events.basic_ability_used import BasicAbilityUsed
 from character import Character, CharacterSide
 from Characters.orc_chieftain import OrcChieftain
 from Characters.orc_warrior import OrcWarrior
@@ -14,15 +16,15 @@ pygame.display.set_caption("SWGOH Clone")
 clock = pygame.time.Clock()
 
 font = pygame.font.Font(None, 20)
-EventPipeline = EventPipeline()
+Events = EventPipeline()
 
-AllyLeader = OrcChieftain(CharacterSide.AllySide, EventPipeline)
-AllyTwo = OrcWarrior(CharacterSide.AllySide, EventPipeline)
-AllyThree = OrcBrute(CharacterSide.AllySide, EventPipeline)
+AllyLeader = OrcChieftain(CharacterSide.AllySide, Events)
+AllyTwo = OrcWarrior(CharacterSide.AllySide, Events)
+AllyThree = OrcBrute(CharacterSide.AllySide, Events)
 
-EnemyLeader = OrcChieftain(CharacterSide.EnemySide, EventPipeline)
-EnemyTwo = OrcWarrior(CharacterSide.EnemySide, EventPipeline)
-EnemyThree = OrcBrute(CharacterSide.EnemySide, EventPipeline)
+EnemyLeader = OrcChieftain(CharacterSide.EnemySide, Events)
+EnemyTwo = OrcWarrior(CharacterSide.EnemySide, Events)
+EnemyThree = OrcBrute(CharacterSide.EnemySide, Events)
 
 Allies: list[Character] = [AllyLeader, AllyTwo, AllyThree]
 Enemies: list[Character] = [EnemyLeader, EnemyTwo, EnemyThree]
@@ -35,7 +37,7 @@ while True:
     print("Turn: ", TurnManager.GetCurrentTurn())
     print("Character: ", CharacterInTurn.Name)
     print("Side: ", CharacterInTurn.Side.name + "\n")
-    EventPipeline.DistributeEvent(NewTurn(CharacterInTurn))
+    Events.DistributeEvent(NewTurn(CharacterInTurn))
 
     for C in Allies:
         print(f"{C.Name} current offence is {C.GetCurrentOffence()}")
