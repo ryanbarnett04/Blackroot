@@ -1,9 +1,14 @@
 from status_effect import *
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from event import Event
 
 class OffenceUp(StatusEffect):
 
-    def __init__(self, Applicant: "Character", Duration: int):
-        super().__init__(Applicant, Duration)
+    def __init__(self, Applicant: "Character", Duration: int, Dispellable: bool, Resistable: bool,
+                 Preventable: bool, Copyable: bool):
+        super().__init__(Applicant, Duration, Dispellable, Resistable, Preventable, Copyable)
         self.Name = "Offence Up"
         self.Type = EffectType.Buff
         self.Description = '''
@@ -26,5 +31,5 @@ class OffenceUp(StatusEffect):
         if not "OFFENCE_UP" in self.Applicant.EffectTags:
             self.Applicant.SetPercentileOffenceModifier(-0.5)
 
-    def Listener(self):
+    def Listener(self, event: "Event"):
         pass
