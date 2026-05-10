@@ -4,6 +4,7 @@ class TurnManager:
     Turn: int
     AllySide: list[Character]
     EnemySide: list[Character]
+    InTurn: Character
     TimeMin: float
 
     def __init__(self, AllySide: list[Character], EnemySide: list[Character]):
@@ -51,11 +52,13 @@ class TurnManager:
         for character in self.AllySide:
             if character.GetTurnMeter() >= 0.999:
                 character.SetTurnMeter(0.0)
+                self.InTurn = character
                 return character
 
         for character in self.EnemySide:
             if character.GetTurnMeter() >= 0.999:
                 character.SetTurnMeter(0.0)
+                self.InTurn = character
                 return character
 
         return None
