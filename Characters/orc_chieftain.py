@@ -49,12 +49,12 @@ class OrcChieftain(Character):
 
         def Activate(self, Allies: list[Character], Enemies: list[Character], TargetAllyIndex: int, TargetEnemyIndex: int):
 
-            self.User.Events.DistributeEvent(BasicAbilityUsed(self.User))
+            self.User.Events.DistributeEvent(BasicAbilityUsed(self.User, self.User))
             Target = Enemies[TargetEnemyIndex]
             SingleTargetDamage(self, Target, 2.5, [-0.10, 0.10])
-            Ally = Allies[random.randint(0,4)]
+            Ally = Allies[random.randint(0,0)]
             if "BUFF_IMMUNE" not in Ally.EffectTags:
-                Ally.StatusEffects.append(SpeedUp(Ally, 1, True, False, True, True))
+                Ally.StatusEffects.append(SpeedUp(Ally, 1, False, True))
 
             return
 
@@ -72,12 +72,12 @@ class OrcChieftain(Character):
 
         def Activate(self, Allies: list[Character], Enemies: list[Character], TargetAllyIndex: int, TargetEnemyIndex: int):
 
-            self.User.Events.DistributeEvent(SpecialAbilityUsed(self.User))
+            self.User.Events.DistributeEvent(SpecialAbilityUsed(self.User, self.User))
 
             for Ally in Allies:
 
                 if "BUFF_IMMUNE" not in Ally.EffectTags:
-                    Ally.StatusEffects.append(OffenceUp(Ally, 2, True, False, True, True))
+                    Ally.StatusEffects.append(OffenceUp(Ally, 2, False, True))
 
                 if "BONUS_TM_IMMUNE" not in Ally.EffectTags:
                     Ally.ModifyTurnMeter(0.2)
@@ -141,6 +141,8 @@ class OrcChieftain(Character):
                 self.User.SetPercentileMaxShieldModifier(0.2)
 
         def Listener(self, event: "Event"):
+
+            print("Ability: ", self.Name, " from ", self.User.Name, " from ", self.User.Side, " is reacting to event")
 
             if isinstance(event, DamageInstanceSingle):
                 if event.GeneratedBy.Side == self.User.Side:
