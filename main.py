@@ -1,7 +1,6 @@
 import sys
 import pygame
 
-from Events.basic_ability_used import BasicAbilityUsed
 from character import Character, CharacterSide
 from Characters.orc_chieftain import OrcChieftain
 from Characters.orc_warrior import OrcWarrior
@@ -100,6 +99,8 @@ while True:
 
             if event.key == pygame.constants.K_SPACE:
                 Waiting = False
+
+    #TODO: Decrement ability cooldowns and status effect timers
 
     pygame.display.update()
     clock.tick(120)
