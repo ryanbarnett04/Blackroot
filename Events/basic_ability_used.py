@@ -6,5 +6,6 @@ if TYPE_CHECKING:
 
 class BasicAbilityUsed(Event):
 
-    def __init__(self, GeneratedBy: "Character"):
+    def __init__(self, GeneratedBy: "Character", User: "Character"):
         super().__init__(EventType.BasicAbilityUsed, GeneratedBy)
+        self.User = User

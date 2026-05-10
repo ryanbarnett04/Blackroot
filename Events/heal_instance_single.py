@@ -11,7 +11,7 @@ class HealInstanceSingle(Event):
     HealthRecovered: int
 
     def __init__(self, GeneratedBy: "Character", Receiver: "Character", HealthRecovered: int):
-        super().__init__(EventType.DamageInstanceSingle, GeneratedBy)
+        super().__init__(EventType.HealInstanceSingle, GeneratedBy)
 
         self.Healer = self.GeneratedBy
         self.Receiver = Receiver

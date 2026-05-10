@@ -8,3 +8,4 @@ class NewTurn(Event):
 
     def __init__(self, GeneratedBy: "Character"):
         super().__init__(EventType.NewTurn, GeneratedBy)
+        self.InTurn = GeneratedBy
