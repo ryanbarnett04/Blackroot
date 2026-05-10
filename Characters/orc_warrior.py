@@ -1,9 +1,8 @@
-import random
+from StatusEffects.defence_down import DefenceDown
 from character import Character, CharacterRole, CharacterSide
 from ability import Ability, AbilityType
 from event import Event
 from event_pipeline import EventPipeline
-from Events.damage_instance_single import DamageInstanceSingle
 from Events.basic_ability_used import BasicAbilityUsed
 from utilities import SingleTargetDamage
 
@@ -30,7 +29,7 @@ class OrcWarrior(Character):
         self.Events.RegisteredAbilities.append(self.ActiveAbilities[0])
 
     # BASIC ABILITY - BANNER STRIKE:
-    # Deal 300% Damage to target enemy
+    # Deal 300% Damage to target enemy and inflict Defence Down for 2 turns
     class Cleave(Ability):
 
         def __init__(self, User: Character):
@@ -41,9 +40,11 @@ class OrcWarrior(Character):
         def Activate(self, Allies: list[Character], Enemies: list[Character], TargetAllyIndex: int,
                      TargetEnemyIndex: int):
 
-            self.User.Events.DistributeEvent(BasicAbilityUsed(self.User))
+            self.User.Events.DistributeEvent(BasicAbilityUsed(self.User, self.User))
             Target = Enemies[TargetEnemyIndex]
-            SingleTargetDamage(self, Target, 2.5, [-0.10, 0.10])
+            SingleTargetDamage(self, Target, 2.5, [-0.08, 0.08])
+            if "DEBUFF_IMMUNE" not in Target.EffectTags:
+                Target.StatusEffects.append(DefenceDown(Target, 2, False, True))
 
             return
 
