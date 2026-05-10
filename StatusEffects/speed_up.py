@@ -6,9 +6,8 @@ if TYPE_CHECKING:
 
 class SpeedUp(StatusEffect):
 
-    def __init__(self, Applicant: "Character", Duration: int, Dispellable: bool, Resistable: bool,
-                 Preventable: bool, Copyable: bool):
-        super().__init__(Applicant, Duration, Dispellable, Resistable, Preventable, Copyable)
+    def __init__(self, Applicant: "Character", Duration: int, Dispellable: bool, Copyable: bool):
+        super().__init__(Applicant, Duration, Dispellable, Copyable)
         self.Name = "Speed Up"
         self.Type = EffectType.Buff
         self.Description = '''
@@ -20,7 +19,7 @@ class SpeedUp(StatusEffect):
     def InitialiseEffect(self):
 
         if not "SPEED_UP" in self.Applicant.EffectTags:
-            self.Applicant.SetPercentileOffenceModifier(0.25)
+            self.Applicant.SetPercentileSpeedModifier(0.25)
 
         self.Applicant.EffectTags.append("SPEED_UP")
 
@@ -31,7 +30,7 @@ class SpeedUp(StatusEffect):
         self.Applicant.EffectTags.remove("SPEED_UP")
 
         if not "SPEED_UP" in self.Applicant.EffectTags:
-            self.Applicant.SetPercentileOffenceModifier(-0.25)
+            self.Applicant.SetPercentileSpeedModifier(-0.25)
 
         self.Applicant.Events.RegisteredEffects.remove(self)
         self.Applicant.StatusEffects.remove(self)
