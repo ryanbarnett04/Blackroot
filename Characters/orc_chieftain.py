@@ -59,8 +59,7 @@ class OrcChieftain(Character):
             return
 
         def Listener(self, event: Event):
-
-            print("Ability: ", self.Name, " from ", self.User.Name, " from ", self.User.Side, " is reacting to event")
+            pass
 
     # SPECIAL ABILITY - WARCRY
     # All allies gain Offence Up for 2 turns and 20% Turn Meter
@@ -87,7 +86,7 @@ class OrcChieftain(Character):
             return
 
         def Listener(self, event: Event):
-            print("Ability: ", self.Name, " from ", self.User.Name, " from ", self.User.Side, " is reacting to event")
+            pass
 
     # LEADER ABILITY - WAR CHIEF
     # Allies gain +30% Max Health and +20% Offence. Orc allies gain 5% Turn Meter whenever they score a critical hit
@@ -108,8 +107,6 @@ class OrcChieftain(Character):
                     Ally.SetPercentileOffenceModifier(0.2)
 
         def Listener(self, event: Event):
-
-            print("Ability: ", self.Name, " from ", self.User.Name, " from ", self.User.Side, " is reacting to event")
 
             if isinstance(event, DamageInstanceMultiple):
                 if event.GeneratedBy.Side == self.User.Side:
@@ -141,8 +138,6 @@ class OrcChieftain(Character):
                 self.User.SetPercentileMaxShieldModifier(0.2)
 
         def Listener(self, event: "Event"):
-
-            print("Ability: ", self.Name, " from ", self.User.Name, " from ", self.User.Side, " is reacting to event")
 
             if isinstance(event, DamageInstanceSingle):
                 if event.GeneratedBy.Side == self.User.Side:
