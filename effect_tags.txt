@@ -1,8 +1,22 @@
 Buffs:
-Offence Up - "OFFENCE_UP"
-Speed Up - "SPEED_UP
+"OFFENCE_UP" - Offence Up (+50% Offence)
+"SPEED_UP" - Speed Up (+25% Speed)
+"DEFENCE_UP" - Defence Up (+50% Defence)
+"CRIT_CHANCE_UP" - Critical Chance Up (+50% Critical Chance)
+"CRIT_DAMAGE_UP" - Critical Damage Up (+50% Critical Damage)
+"HEALTH_UP" - Health Up (+15% Max Health)
+"HEALTH_STEAL_UP" - Health Steal Up (+50% Health Steal)
+"EVASION_UP" - Evasion Up (+15% Evasion)
 
 Debuffs:
+"OFFENCE_DOWN" - Offence Down (-50% Offence)
+"SPEED_DOWN" - Speed Down (-25% Speed)
+"DEFENCE_DOWN" - Defence Down (-50% Defence)
+"CRIT_CHANCE_DOWN" - Critical Chance Down (-50% Critical Chance)
+"CRIT_DAMAGE_DOWN" - Critical Damage Down (-50% Critical Damage)
+"HEALTH_DOWN" - Health Down (-15% Max Health)
+"HEALTH_STEAL_DOWN" - Health Steal Down (-50% Health Steal)
+"EVASION_DOWN" - Evasion Down (-15% Evasion)
 
 Tags:
 "ACTIVE_LEADER"
@@ -34,3 +48,4 @@ Tags:
 "GUARANTEED_CRIT"
 "STUN_EFFECT"
 "ASSIST_IMMUNE"
+"CANNOT_ASSIST"
