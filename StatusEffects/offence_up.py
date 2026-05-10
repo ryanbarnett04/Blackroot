@@ -6,9 +6,8 @@ if TYPE_CHECKING:
 
 class OffenceUp(StatusEffect):
 
-    def __init__(self, Applicant: "Character", Duration: int, Dispellable: bool, Resistable: bool,
-                 Preventable: bool, Copyable: bool):
-        super().__init__(Applicant, Duration, Dispellable, Resistable, Preventable, Copyable)
+    def __init__(self, Applicant: "Character", Duration: int, Dispellable: bool, Copyable: bool):
+        super().__init__(Applicant, Duration, Dispellable, Copyable)
         self.Name = "Offence Up"
         self.Type = EffectType.Buff
         self.Description = '''
