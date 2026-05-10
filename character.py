@@ -1,4 +1,3 @@
-from ability import *
 from enum import Enum
 from event_pipeline import EventPipeline
 
@@ -343,3 +342,19 @@ class Character:
 
     def GetTurnMeter(self):
         return self.TurnMeter
+
+    def ReceiveDamage(self, ActiveAbility: "Ability", AttackDamage: int):
+
+        if self.GetCurrentShield() > 0:
+
+            if self.GetCurrentShield() < AttackDamage:
+                ShieldDamage = self.GetCurrentShield()
+                HealthDamage = AttackDamage - ShieldDamage
+                self.ModifyCurrentShield(-ShieldDamage)
+                self.ModifyCurrentHealth(-HealthDamage)
+            else:
+                self.ModifyCurrentShield(-AttackDamage)
+        else:
+            self.ModifyCurrentHealth(-AttackDamage)
+
+        print(f"{ActiveAbility.Name} - Damage: {AttackDamage}")
