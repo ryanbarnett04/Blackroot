@@ -20,20 +20,15 @@ class StatusEffect(ABC):
     Applicant: "Character"
     Duration: int
     Dispellable: bool               # Applicable to Buffs and Debuffs
-    Resistable: bool                # Debuffs only - For Buffs set to None
-    Preventable: bool               # Buffs only - For Debuffs set to None
     Copyable: bool                  # Buffs only - For Debuffs set to None
 
     Events: "EventPipeline"
 
-    def __init__(self, Applicant: "Character", Duration: int, Dispellable: bool, Resistable: bool,
-                 Preventable: bool, Copyable: bool):
+    def __init__(self, Applicant: "Character", Duration: int, Dispellable: bool, Copyable: bool):
         self.Applicant = Applicant
         self.Duration = Duration
         self.Events = self.Applicant.Events
         self.Dispellable = Dispellable
-        self.Resistable = Resistable
-        self.Preventable = Preventable
         self.Copyable = Copyable
 
     @abstractmethod
