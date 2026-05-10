@@ -1,22 +1,36 @@
 import random
+from enum import Enum
 from typing import TYPE_CHECKING
-
-from Events.damage_instance_mulitple import DamageInstanceMultiple
+from dataclasses import dataclass
 from Events.damage_instance_single import DamageInstanceSingle
+from Events.heal_instance_single import HealInstanceSingle
 
 if TYPE_CHECKING:
     from character import Character
     from ability import Ability
 
-def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
-                       AbilityDamage: float, VarianceRange: list[float]):
+class StatusType(Enum):
+    Default = 1
+    NoDamage = 2
+    Evaded = 3
+    DamageDealt = 4
+
+@dataclass
+class DamageStatus:
+    Type: StatusType = StatusType.Default
+    Damage: int = -1
+    WasCrit: bool | None = None
+
+# TODO: Redesign defence system to not use flat defence - to overpowered (do not do pure percentile defence either)
+def CalculateDamage(ActiveAbility: "Ability", Target: "Character",
+                       AbilityDamage: float, VarianceRange: list[float]) -> DamageStatus:
 
     if "DAMAGE_IMMUNE" in Target.EffectTags:
-        return
+        return DamageStatus(Type = StatusType.NoDamage)
 
-    if "GUARANTEED_EVADE" in Target.EffectTags or random.randint(1, 100) <= Target.GetCurrentEvasion():
+    if "GUARANTEED_EVADE" in Target.EffectTags or random.randint(1,100) <= Target.GetCurrentEvasion():
         print("Evaded!")
-        return
+        return DamageStatus(Type = StatusType.Evaded)
 
     AttackDamage = (ActiveAbility.User.GetCurrentOffence() * AbilityDamage) - Target.GetCurrentDefence()
     IsCrit = False
@@ -25,7 +39,7 @@ def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
         AttackDamage = 0
 
     if "CRIT_IMMUNE" not in Target.EffectTags:
-        if "GUARANTEED_CRIT" in ActiveAbility.User.EffectTags or random.randint(1, 100) <= ActiveAbility.User.GetCurrentCriticalChance():
+        if "GUARANTEED_CRIT" in ActiveAbility.User.EffectTags or random.randint(1,100) <= ActiveAbility.User.GetCurrentCriticalChance():
             AttackDamage = AttackDamage * (ActiveAbility.User.GetCurrentCriticalDamage() / 100)
             IsCrit = True
 
@@ -33,85 +47,45 @@ def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
     AttackDamage = AttackDamage * (1 + Variance)
     AttackDamage = int(AttackDamage)
 
-    if Target.GetCurrentShield() > 0:
+    return DamageStatus(Type = StatusType.DamageDealt, Damage = AttackDamage, WasCrit = IsCrit)
 
-        if Target.GetCurrentShield() < AttackDamage:
-            ShieldDamage = Target.GetCurrentShield()
-            HealthDamage = AttackDamage - ShieldDamage
-            Target.ModifyCurrentShield(-ShieldDamage)
-            Target.ModifyCurrentHealth(-HealthDamage)
-        else:
-            Target.ModifyCurrentShield(-AttackDamage)
-    else:
-        Target.ModifyCurrentHealth(-AttackDamage)
+def SingleTargetDamage(ActiveAbility: "Ability", Target: "Character",
+                       AbilityDamage: float, VarianceRange: list[float]):
+
+    DamageInfo = CalculateDamage(ActiveAbility, Target, AbilityDamage, VarianceRange)
+
+    if DamageInfo.Type == StatusType.NoDamage:
+        return
+
+    if DamageInfo.Type == StatusType.Evaded:
+        # TODO: Distribute Evasion event here but evasion event not implemented yet
+        return
+
+    Target.ReceiveDamage(ActiveAbility, DamageInfo.Damage)
+    ActiveAbility.User.Events.DistributeEvent(DamageInstanceSingle(ActiveAbility.User, Target, DamageInfo.Damage, bool(DamageInfo.WasCrit)))
 
     if "CANNOT_RECOVER_HEALTH" not in ActiveAbility.User.EffectTags:
-        ActiveAbility.User.ModifyCurrentHealth(int(AttackDamage * (ActiveAbility.User.GetCurrentHealthSteal() / 100)))
-
-    ActiveAbility.User.Events.DistributeEvent(DamageInstanceSingle(ActiveAbility.User, Target, AttackDamage, IsCrit))
-
-    print(f"{ActiveAbility.Name} - Damage: {AttackDamage}")
+        Recovery = int(DamageInfo.Damage * (ActiveAbility.User.GetCurrentHealthSteal() / 100))
+        ActiveAbility.User.ModifyCurrentHealth(Recovery)
+        ActiveAbility.User.Events.DistributeEvent(HealInstanceSingle(ActiveAbility.User, ActiveAbility.User, Recovery))
 
 def MultiTargetDamage(ActiveAbility: "Ability", Targets: list["Character"],
                       AbilityDamage: float, VarianceRange: list[float]):
-
-    Receivers: list["Character"] = []
-    DamageDealt: list[int] = []
-    WasCrit: list[bool] = []
-
-    for C in Targets:
-
-        if "DAMAGE_IMMUNE" in C.EffectTags:
-            continue
-
-        if "GUARANTEED_EVADE" in C.EffectTags or random.randint(1, 100) <= C.GetCurrentEvasion():
-            print("Evaded!")
-            continue
-
-        AttackDamage = (ActiveAbility.User.GetCurrentOffence() * AbilityDamage) - C.GetCurrentDefence()
-        IsCrit = False
-
-        if AttackDamage < 0:
-            AttackDamage = 0
-
-        if "CRIT_IMMUNE" not in C.EffectTags:
-            if "GUARANTEED_CRIT" in ActiveAbility.User.EffectTags or random.randint(1, 100) <= ActiveAbility.User.GetCurrentCriticalChance():
-                AttackDamage = AttackDamage * (ActiveAbility.User.GetCurrentCriticalDamage() / 100)
-                IsCrit = True
-
-        Variance = random.uniform(VarianceRange[0], VarianceRange[1])
-        AttackDamage = AttackDamage * (1 + Variance)
-        AttackDamage = int(AttackDamage)
-
-        if C.GetCurrentShield() > 0:
-
-            if C.GetCurrentShield() < AttackDamage:
-                ShieldDamage = C.GetCurrentShield()
-                HealthDamage = AttackDamage - ShieldDamage
-                C.ModifyCurrentShield(-ShieldDamage)
-                C.ModifyCurrentHealth(-HealthDamage)
-            else:
-                C.ModifyCurrentShield(-AttackDamage)
-        else:
-            C.ModifyCurrentHealth(-AttackDamage)
-
-        if "CANNOT_RECOVER_HEALTH" not in ActiveAbility.User.EffectTags:
-            ActiveAbility.User.ModifyCurrentHealth(int(AttackDamage * (ActiveAbility.User.GetCurrentHealthSteal() / 100)))
-
-        Receivers.append(C)
-        DamageDealt.append(AttackDamage)
-        WasCrit.append(IsCrit)
-
-    ActiveAbility.User.Events.DistributeEvent(DamageInstanceMultiple(ActiveAbility.User, Receivers = Receivers, DamageDealt = DamageDealt, WasCrit = WasCrit))
+    # TODO: Implement MultiTargetDamage
+    pass
 
 def GrantBuffSingle():
+    # TODO: Implement GrantBuffSingle
     pass
 
 def GrantBuffMultiple():
+    # TODO: Implement GrantBuffMultiple
     pass
 
 def InflictDebuffSingle():
+    # TODO: Implement InflictDebuffSingle
     pass
 
 def InflictDebuffMultiple():
+    # TODO: Implement InflictDebuffMultiple
     pass
